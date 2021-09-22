@@ -1,6 +1,8 @@
 # DS_Coursework
 
-> This Repository mainly shows you my work that I involved with the Data structures and Programming Lab in University Of Hyderabad.
+[![forthebadge](https://forthebadge.com/images/badges/made-with-c.svg)](https://forthebadge.com)
+
+> This Repository mainly shows you my work that I involved with the Data structures and Programming Lab in my Master's in ubuntu(Linux) environment.
 
 ## Topics and info
 - Exercises on Numbers and Arrays
