@@ -9,7 +9,9 @@ struct stack
 };
 
 int isStackEmpty(struct stack * st);
-
+void push(struct stack *st, char ele);
+void pop(struct stack * st);
+int checkBalancedParanthesis(struct stack * st);
 
 
 int main()
