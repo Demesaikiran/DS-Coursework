@@ -84,6 +84,7 @@ int main()
     else
         printf("%d %d", index.rInd, index.cInd);
         
+    free(mat);
     return 0;
         
             
