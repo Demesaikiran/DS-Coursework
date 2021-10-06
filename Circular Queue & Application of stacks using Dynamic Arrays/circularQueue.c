@@ -101,7 +101,6 @@ void enqueue(CQUEUE *qu, int ele)
     
     if(isQFull(qu))
     {
-        printf("QF QSD ");
         int *d      =  qu -> data;
         int size    =  qu -> size;
         qu -> data  =  malloc(sizeof(int) * 2 * size);
@@ -162,6 +161,10 @@ int main()
         {
             case 1:
             {
+                if(isQFull(cqu))
+                {
+                    printf("QF QSD ");
+                }
                 scanf("%d", &ele);
                 enqueue(cqu, ele);
                 break;
@@ -194,6 +197,7 @@ int main()
         
         scanf("%d", &choice);
     }
+    free(cqu);
     
     return 0;
 }

@@ -257,6 +257,7 @@ int main()
 
     int ans = postfixEvaluation(exp, st);
     printf("%d", ans);
+    free(st);
     return 0;
 
 }
