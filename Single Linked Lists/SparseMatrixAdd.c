@@ -185,6 +185,31 @@ int validInput(int row, int col, int r, int c)
 }
 
 /*
+*   Funciton: createMatrix
+*   ----------------------
+*   It creates the linkedlist of row, col, value nodes and adds it to the last
+*   
+*   INPUT:
+*   head     : matrix reference
+*   row, col : The generic row and column given by the user
+*   size     : Number of non zero elements need to insert into the list
+*/
+int createMatrix(NODE ** head, int size, int row, int col)
+{
+    int r, c, val;
+    for(int current = 0; current < size; current++)
+    {
+        scanf("%d%d%d", &r, &c, &val);
+        if(!(validInput(row, col, r, c)))
+        {
+            return 0;
+        }
+        insertLast(&(*head), r, c, val);
+    }
+    return 1;
+}
+
+/*
 *   Function: IndexPresent
 *   ----------------------
 *   Returns the index at which the same index present in matrix - 2
@@ -251,6 +276,9 @@ void insertNext(NODE ** head1, NODE ** head2)
 */
 int indexPosition(NODE * node1, NODE * node2)
 {
+    //Edge cases
+    if(node1 == NULL) return 2;
+    if(node2 == NULL) return 1;
 
     if ((node1 -> e -> row == node2 -> e -> row))
     {
@@ -267,6 +295,17 @@ int indexPosition(NODE * node1, NODE * node2)
     return 2;
 }
 
+
+void copyList(NODE ** node, NODE * reference)
+{
+    ELE *temp = NULL;
+    while(reference != NULL)
+    {
+        temp      = reference -> e;
+        insertLast(&(*node), temp -> row, temp -> col, temp -> val);
+        reference = reference -> next;
+    }
+}
 /*
 *   Function: addSparseMatrix
 *   -------------------------
@@ -277,23 +316,30 @@ int indexPosition(NODE * node1, NODE * node2)
 *   head2    : matrix - 2 reference
 *   head1len : Number of non-zero elements in matrix - 1
 *   head2len : Number of non-zero elements in matrix - 2
+*
+*   OUTPUT:
+*   Returns added linkedlist to the called function
 */
-void addSparseMatrix(NODE ** head1, NODE ** head2, int head1len, int head2len)
+NODE * addSparseMatrix(NODE * head1, NODE * head2, int head1len, int head2len)
 {
+    NODE * resMatrix = NULL;
+    ELE * tempEle   = NULL;
     //Edge cases
     if(head2len == 0) 
-        return;
+    {
+        copyList(&resMatrix, head1);
+        return resMatrix;
+    }
     if(head1len == 0) 
     {
-        * head1 = * head2;
-        return;
+        copyList(&resMatrix, head2);
+        return resMatrix;
     }
 
-    NODE * travel1     = * head1;
-    NODE * travel1prev =   NULL;
-    NODE * travel2     = * head2;
+    NODE * travel1     =  head1;
+    NODE * travel2     =  head2;
 
-    while(travel1 != NULL)
+    while(travel1 != NULL || travel2 != NULL)
     {   
         int position = indexPosition(travel1, travel2);
 
@@ -301,39 +347,32 @@ void addSparseMatrix(NODE ** head1, NODE ** head2, int head1len, int head2len)
         {
             case 0:
             {
-                travel1 -> e -> val  +=  travel2 -> e -> val;
-                travel1prev           =  travel1;
-                travel1               =  travel1 -> next;
-                travel2               =  travel2 -> next; 
+                tempEle = travel1 -> e;
+                insertLast(&resMatrix, tempEle -> row, tempEle -> col, tempEle -> val + travel2 -> e -> val);
+                travel1 =  travel1 -> next;
+                travel2 =  travel2 -> next; 
                 break;
             }
             // If same row and node2 has Bigger Column or (Bigger row)
             case 1:
             {
-                travel1prev  =  travel1;
+                tempEle = travel1 -> e;
+                insertLast(&resMatrix, tempEle -> row, tempEle -> col, tempEle -> val);
                 travel1      =  travel1 -> next;
                 break;
             }
             // Occurs first than the matrix one element in list - 1
             case 2:
             {
-                if(travel1prev == NULL)
-                {
-                    insertFront(&(*head1), (travel2 -> e -> row), (travel2 -> e -> col), (travel2 -> e -> val));
-                    travel1prev = * head1;
-                }
-                else
-                {
-                    insertNext(&travel1prev, &travel2);
-                    travel1prev = travel1prev -> next;
-                }
-                travel1 = travel1prev -> next;
+                tempEle = travel2 -> e;
+                insertLast(&resMatrix, tempEle -> row, tempEle -> col, tempEle -> val);
                 travel2 = travel2 -> next;
                 break;
             }
         }
     }
-    travel1prev -> next = travel2;
+
+    return resMatrix;
 
 }
 
@@ -364,6 +403,25 @@ void printans(NODE * output, int row , int col)
     }
 }
 
+/*
+*   Function: freeList
+*   ------------------
+*   Removes the memory allocated to the linked  lists
+*   INPUT : 
+*   node - Address of the linkedlist
+*/
+void freeList(NODE * node)
+{
+    
+    while(node != NULL)
+    {
+        NODE * temp =  node;
+        ELE * tempEle = node -> e;
+        node = (node) -> next;
+        free(temp);
+        free(tempEle);
+    }
+}
 
 int main()
 {
@@ -384,39 +442,23 @@ int main()
     NODE * mat1head = NULL;
     NODE * mat2head = NULL;
 
-    for( int i = 0; i < mat1; i++)
+    int vi1 = createMatrix(&mat1head, mat1, row, col);
+    int vi2 = createMatrix(&mat2head, mat2, row, col);
+
+    if(!vi1 || !vi2)
     {
-        scanf("%d%d%d", &r, &c, &val);
-        //NODE * temp = createNode(r, c, val);
-        if(!validInput(row, col, r, c))
-        {
-            free(mat1head);
-            free(mat2head);
-            printf("INVALID INPUT");
-            return 0;
-        }
-        insertLast(&mat1head, r, c, val);
+        printf("INVALID INPUT");
+        free(mat1head);
+        free(mat2head);
+        return 0;
     }
+    
+    NODE * result = addSparseMatrix(mat1head, mat2head, mat1, mat2);
 
-    for(int i = 0; i < mat2; i++)
-    {
-        scanf("%d%d%d", &r, &c, &val);
-        if(!validInput(row, col, r, c))
-        {
-            free(mat1head);
-            free(mat2head);
-            printf("INVALID INPUT");
-            return 0;
-        }
-        insertLast(&mat2head, r, c, val);
-    }
 
-    addSparseMatrix(&mat1head, &mat2head, mat1, mat2);
-
-    //printList(mat1head);
-    printans(mat1head, row, col);
-
-    if(mat1 != 0) free(mat2head);
-    free(mat1head);
+    printans(result, row, col);
+    freeList(mat1head);
+    freeList(mat2head);
+    freeList(result);
     return 0;
 }
