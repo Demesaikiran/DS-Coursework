@@ -117,6 +117,45 @@ void Heap_Sort(int * heap, int heapsize)
     }
 }
 
+
+int Extract_Max(int * heap, int *heapsize)
+{
+    Build_MaxHeap(heap, *heapsize);
+    int element = heap[0];
+    swap(&heap[0], &heap[*heapsize-1]);
+    MAXHeap(heap, *heapsize, 0);
+    *heapsize -= 1;
+
+    return element;
+}
+
+int Heap_Maximum(int * heap)
+{
+    return heap[0];
+}
+
+void AdjustHeap(int * heap, int heapsize, int index)
+{
+    int parent = index / 2;
+
+    while(parent != 0)
+    {
+        if(heap[index] > heap[parent])
+        {
+            swap(&(heap[index]), &(heap[parent]));
+            index = parent;
+            parent /= 2;
+        }
+    }
+}
+void Heap_Increase_Key(int * heap, int heapsize, int index, int value)
+{
+    heap[index] += value;
+
+    AdjustHeap(heap, heapsize, index);
+
+    MAXHeap(heap, heapsize, index);
+}
 /**
  * Prints the array of size given in parameters
  * 
@@ -132,6 +171,7 @@ void print(int *arr, int size)
         printf("%d ", arr[i]);
     }
 }
+
 
 int main()
 {
@@ -149,6 +189,11 @@ int main()
         scanf("%d", & arr[i]);
 
     Build_MaxHeap(arr, n);
-    Heap_Sort(arr, n);
+    //Heap_Sort(arr, n);
+    Heap_Increase_Key(arr, n, 5, 100);
     print(arr, n);
+
+    //printf("%d", Extract_Max(arr, &n));
+    free(arr);
+
 }
