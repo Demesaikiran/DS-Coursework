@@ -26,6 +26,14 @@ NODE * createNode(void * data)
     return newnode;
 }
 
+LIST * createList()
+{
+    LIST * listnode = malloc(sizeof(LIST));
+    listnode -> head = NULL;
+    listnode -> tail = NULL;
+    listnode -> size = 0;
+    return listnode;
+}
 void insertFirst(NODE ** head, void * data)
 {
     NODE * newnode = createNode(data);
@@ -63,29 +71,29 @@ void insertLast(NODE ** head, void * data)
     return;
 }
 
-void insertAtIndex(NODE ** head, void * data, int index)
+void insertAtIndex(LIST ** _list, void * data, int index)
 {
     NODE * newnode = createNode(data);
 
-    if(*head == NULL)
+    if(isListEmpty(&(*_list)))
     {
-        *head = newnode;
+        (*_list) -> head = newnode;
         return;
     }
     if(index == 0)
     {
-        insertFirst(&(*head), data);
+        insertFirst(&(*_list), data);
         return;
     }
 
-    NODE * temp = *head;
+    NODE * temp = (*_list) -> head;
     while(--index)
     {
         temp = temp -> next;
     }
     if(temp -> next == NULL)
     {
-        insertLast(&(*head), data);
+        insertLast(&(*_list), data);
         return;
     }
     newnode -> next         =  temp -> next;
@@ -95,32 +103,32 @@ void insertAtIndex(NODE ** head, void * data, int index)
     return;
 }
 
-void * removeFirst(NODE ** head)
+void * removeFirst(LIST ** _list)
 {
-    if(*head == NULL) return NULL;
+    if(isListEmpty(&(*_list))) return NULL;
 
-    NODE * node =  *head;
-    *head       =  (*head) -> next;
-    void *data  =  node -> data;
+    NODE * node       =  (*_list) -> head;
+    (*_list) -> head  =  (*_list) -> head -> next;
+    void *data        =  node -> data;
 
     free(node);
     return data;
 }
 
-void * removeLast(NODE ** head)
+void * removeLast(LIST ** _list)
 {
-    if(*head == NULL) return NULL;
+    if(isListEmpty(&(*_list))) return NULL;
 
     NODE * node = NULL;
 
-    if((*head) -> next == NULL)
+    if((*_list) -> head -> next == NULL)
     {
-        node   =  *head;
-        *head  =  NULL;
+        node   =  (*_list) -> head;
+        (*_list) -> head  =  NULL;
     }
     else
     {
-        NODE * traverse = *head;
+        NODE * traverse = *_list;
         while(traverse -> next -> next != NULL)
         {
             traverse = traverse -> next;
@@ -134,14 +142,14 @@ void * removeLast(NODE ** head)
     return data;
 }
 
-void * removeAtIndex(NODE ** head, int index)
+void * removeAtIndex(LIST ** _list, int index)
 {
 
-    NODE * traverse = *head;
+    NODE * traverse = (*_list) -> head;
     NODE * delnode = NULL;
     if(index == 0)
     {
-        *head = (*head) -> next;
+        (*_list) -> head = (*_list) -> head -> next;
         delnode = traverse;
         
     }
@@ -165,9 +173,9 @@ void * removeAtIndex(NODE ** head, int index)
     return data;
 }
 
-void displayList(NODE * head)
+void displayList(LIST * mylist)
 {
-    NODE * temp = head;    
+    NODE * temp = mylist -> head;    
 
     while(temp != NULL)
     {
@@ -179,26 +187,29 @@ void displayList(NODE * head)
     return;
 }
 
-void freeList(NODE * garbage)
+void freeList(LIST * garbage)
 {
     
     while(garbage != NULL)
     {
-        NODE * temp =  garbage;
-        garbage = (garbage) -> next;
+        NODE * temp =  garbage -> head;
+        garbage = (garbage) -> head -> next;
         free(temp);
     }
+    free(garbage);
     
 }
 
-int isListEmpty(NODE ** head)
+int isListEmpty(LIST ** garb)
 {
-    return *head == NULL ? 1 : 0;
+    return (*garb) -> size == 0 ? 1 : 0;
 }
+
 int main()
 {
     //void * data = NULL;
-    NODE * head = NULL;
+    //NODE * head = NULL;
+    LIST * mylist = createList();
     int nodes = 0;
 
     int choice;
@@ -212,8 +223,8 @@ int main()
                 //Insert element e at the head of the list
                 char * e = malloc(sizeof(char) * MAXSIZE);
                 scanf("%s", e);
-                insertFirst(&head, e);
-                nodes++;
+                insertFirst(&mylist, e);
+                mylist -> size ++;
                 break;
             }
 
@@ -222,8 +233,8 @@ int main()
                 // Insert element e at the tail of the list
                 char * e = malloc(sizeof(char) * MAXSIZE);
                 scanf("%s", e);
-                insertLast(&head, e);
-                nodes++;
+                insertLast(&mylist, e);
+                mylist -> size++;
                 break;
             }
 
@@ -242,8 +253,8 @@ int main()
                 }
                 char * e = malloc(sizeof(char) * MAXSIZE);
                 scanf("%s", e);
-                insertAtIndex(&head, e, index);
-                nodes++;
+                insertAtIndex(&mylist, e, index);
+                mylist -> size++;
                 break;
             }
 
@@ -252,14 +263,14 @@ int main()
                 // Delete element from head of the list and display
                 // The deleted element
                 
-                void * e = removeFirst(&head);
+                void * e = removeFirst(&mylist);
                 if(e == NULL)
                 {
                     printf("LE ");
                     break;
                 }
                 printf("%s ", (char *) e);
-                nodes--;
+                mylist -> size--;
                 break;
                 
             }
@@ -269,14 +280,14 @@ int main()
                 // delete element from tail of the list and display
                 // The deleted element
 
-                void * e = removeLast(&head);
+                void * e = removeLast(&mylist);
                 if(e == NULL)
                 {
                     printf("LE ");
                     break;
                 }
                 printf("%s ", (char *) e);
-                nodes--;
+                mylist -> size--;
                 break;
             }
 
@@ -287,7 +298,7 @@ int main()
                 
                 int i;
                 scanf("%d", &i);
-                if(isListEmpty(&head))
+                if(isListEmpty(&mylist))
                 {
                     printf("LE ");
                     break;
@@ -298,20 +309,20 @@ int main()
                     return 0;
                 }
 
-                void * e = removeAtIndex(&head, i);
+                void * e = removeAtIndex(&mylist, i);
                 printf("%s ", (char *) e);
-                nodes--;
+                mylist -> size--;
                 break;
             }
 
             case 7:
             {
                 //Display the list from head to tail
-                if(isListEmpty(&head))
+                if(isListEmpty(&mylist))
                 {
                     break;
                 }
-                displayList(head);
+                displayList(mylist);
                 break;
             }
 
@@ -324,5 +335,5 @@ int main()
         scanf("%d", &choice);
     }
 
-    freeList(head);
+    freeList(mylist);
 }
