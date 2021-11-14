@@ -231,10 +231,95 @@ void printGraph(AList * graph)
     }
 }
 
+/**
+ * @brief The Upcoming functions are to store the connected Components
+ * 
+ *   OUT OF INTEREST
+ */
+
+void DFS_extra(AList * graph, NODE ** current_cc, int **visited, int v)
+{
+    (*visited)[v] = 1;
+    NODE * newnode = createNode(v);
+    if(*current_cc == NULL)
+    {
+        *current_cc = newnode;
+    }
+    else
+    {
+        NODE * temp = *current_cc;
+        *current_cc = newnode;
+        (*current_cc) ->next = temp;
+    }
+    
+    NODE * traverse  =  graph -> vertex[v];
+
+    while(traverse != NULL)
+    {
+        if((*visited)[traverse -> dest]) 
+        {
+            traverse = traverse -> next;
+            continue;
+        }
+        DFS_extra(graph, &(*current_cc), &(*visited), traverse -> dest);
+        traverse = traverse -> next;
+    }
+}
+
+
+AList * connectedComponents(AList * graph)
+{
+    int V = graph -> V;
+    int *  visited = createArray(V+1);
+    AList * cc = createAdjList(V);
+    int index = 0;
+
+    for(int i = 1; i <= V; ++i)
+    {
+        if(visited[i]) continue;
+        NODE * current_cc = NULL;
+        DFS_extra(graph, &current_cc, &visited, i);
+        cc -> vertex[index++] = current_cc;
+    }
+    cc -> V = index;
+
+    cc -> vertex[index] = NULL;
+    return cc;
+}
+
+void freeGraph(AList * gb)
+{
+    NODE * travel = gb -> vertex[0];
+
+    int V = gb -> V;
+    int i = 0;
+    while(i != V+1)
+    {
+        if(travel != NULL)
+        {
+            while(travel != NULL)
+            {
+                NODE * edgeNodes = travel;
+                travel = travel -> next;
+                free(edgeNodes);
+            }
+            free(travel);
+        }
+        travel = gb -> vertex[++i];
+    }
+}
+
 int main(int argc, char * argv[])
 {
     AList * graph = inputGraph(argv[1]);
     //createGraph(nOfVertices, nOfEdges);
-
     printf("%d", noOfConnectedComponents(graph));
+    freeGraph(graph);
+
+    /*
+        // OUT OF INTEREST
+        // To store the connected components
+    AList * connectedComp = connectedComponents(graph);
+    printGraph(connectedComp);
+    */
 }
