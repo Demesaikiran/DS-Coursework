@@ -160,55 +160,6 @@ AList * inputGraph(char * filename)
     return newGraph;
 }
 
-/**
- * @brief Depth First Search Graph Traversal
- * 
- * @param graph 
- *          Adjacency list object
- * @param visited 
- *          Visited vertices information
- * @param v 
- *          vertex - v
- */
-void DFS(AList * graph, int ** visited, int v)
-{
-    (*visited)[v]    =  1;
-    NODE * traverse  =  graph -> vertex[v];
-
-    while(traverse != NULL)
-    {
-        if((*visited)[traverse -> dest]) 
-        {
-            traverse = traverse -> next;
-            continue;
-        }
-        DFS(graph, &(*visited), traverse -> dest);
-        traverse = traverse -> next;
-    }
-}
-
-/**
- * @brief Number of connected components in a Graph
- * 
- * @param graph 
- *          Adjacency list object
- * @return int 
- *          Count of number of connected Components
- */
-int noOfConnectedComponents(AList * graph)
-{
-    int count      =  0;
-    int V          =  graph -> V;
-    int * visited  =  createArray(V+1);
-
-    for(int i = 1; i <= V; ++i)
-    {
-        if(visited[i]) continue;
-        DFS(graph, &(visited), i);
-        count++;
-    }
-    return count;
-}
 
 /**
  * @brief Prints the Adjacency list
@@ -234,13 +185,18 @@ void printConnectedComponents(AList * graph)
     printf("\n\nNumber of connected components: %d\n\n", count);
 }
 
-/**
- * @brief The Upcoming functions are to store the connected Components
- * 
- *   OUT OF INTEREST
- */
 
-void DFS_extra(AList * graph, NODE ** current_cc, int **visited, int v)
+/**
+ * @brief Depth First Search Graph Traversal
+ * 
+ * @param graph 
+ *          Adjacency list object
+ * @param visited 
+ *          Visited vertices information
+ * @param v 
+ *          vertex - v
+ */
+void DFS(AList * graph, NODE ** current_cc, int **visited, int v)
 {
     (*visited)[v] = 1;
     NODE * newnode = createNode(v);
@@ -264,12 +220,19 @@ void DFS_extra(AList * graph, NODE ** current_cc, int **visited, int v)
             traverse = traverse -> next;
             continue;
         }
-        DFS_extra(graph, &(*current_cc), &(*visited), traverse -> dest);
+        DFS(graph, &(*current_cc), &(*visited), traverse -> dest);
         traverse = traverse -> next;
     }
 }
 
-
+/**
+ * @brief Number of connected components in a Graph
+ * 
+ * @param graph 
+ *          Adjacency list object
+ * @return List object
+ *          List of connected components
+ */
 AList * connectedComponents(AList * graph)
 {
     int V = graph -> V;
@@ -281,7 +244,7 @@ AList * connectedComponents(AList * graph)
     {
         if(visited[i]) continue;
         NODE * current_cc = NULL;
-        DFS_extra(graph, &current_cc, &visited, i);
+        DFS(graph, &current_cc, &visited, i);
         cc -> vertex[index++] = current_cc;
     }
     cc -> V = index;
@@ -315,9 +278,6 @@ void freeGraph(AList * gb)
 int main(int argc, char * argv[])
 {
     AList * graph = inputGraph(argv[1]);
-    //createGraph(nOfVertices, nOfEdges);
-    //printf("%d", noOfConnectedComponents(graph));
-    
 
     AList * connectedComp = connectedComponents(graph);
     printConnectedComponents(connectedComp);
