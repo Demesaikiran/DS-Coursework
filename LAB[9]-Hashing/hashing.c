@@ -8,6 +8,7 @@ struct hashnode
     char * data;
 };
 
+
 typedef struct hashtable HASH;
 struct hashtable
 {
@@ -43,34 +44,46 @@ void write_to_file(HASH * table, char * filename)
     FILE * fp = fopen(filename, "w");
 
     int h_size = table -> size;
-    HNODE * tempnode = table -> value[0];
+    HNODE * tempnode;
 
     for(int i = 0; i < h_size; ++i)
     {
-        if(tempnode -> hash_val != 0)
-            fprintf(fp, "%s\n", tempnode -> data);
-
         tempnode = table -> value[i];
+        if(tempnode -> hash_val != 0){
+            printf("%s\n", tempnode -> data);
+            fprintf(fp, "%s\n", tempnode -> data);
+        }
     }
+    fclose(fp);
     return;
 }
 
-long long compute_hash(char * data, int length)
+/**
+ * @brief computing hash value to a string.
+ * @brief Hash value = char * p^0 + char * p ^1 + char * p ^ 2 +....
+ * 
+ * @param data 
+ *          data is the string passed by the calling fucntion
+ * @param length 
+ *          length is the size of the string
+ * @return long long value <Hash value>
+ */
+long long compute_hash(char * data)
 {
-    int p = 31;
-    int m = 100;
+    const int p = 31;
+    const int  m = 1e9+9;
     unsigned long long hash_value = 0;
     long long p_pow = 1;
 
-    char ch;
-
-    for(int i = 0; i < length; ++i)
+    char ch = data[0];
+    int i;
+    for(i = 1; ch != '\0'; ++i)
     {
         ch = data[i];
-        hash_value = (hash_value + (ch - 'a' + 1) * p_pow) % m;
+        hash_value = (hash_value  + (ch - 'a' + 1) * p_pow) % m;
         p_pow = (p_pow * p) % m;
     }
-    
+    //printf("%lld\n", hash_value);
     return hash_value;
 }
 
@@ -90,9 +103,10 @@ int compare_hash_value(long long hv1, char * s1, long long hv2, char * s2)
 }
 
 /**
- * @brief 
+ * @brief inserting a string into the hash...
  * 
  * @param table 
+ *          Hash table storing the strings with their hash value
  * @param h_value 
  * @param data 
  * @return int 
@@ -102,17 +116,19 @@ int insert_into_hash(HASH ** table, long long h_value, char * data)
     HASH * temp = *table;
     int h_size = temp -> size;
     int modvalue = h_value % h_size;
+    //printf("\nModevalue - %d", modvalue);
     HNODE * tempnode = temp -> value[modvalue];
+    //printf("\nModevalue - %d", modvalue);
 
     if(tempnode -> hash_val == 0)
     {
         tempnode -> hash_val = h_value;
         tempnode -> data     = data;
+        //printf("%s\n", data);
         return 1;
     }
+    int index = modvalue;
 
-    int index = (modvalue + 1) % h_size;
-    HNODE * tempnode = temp -> value[index];
     while(tempnode -> hash_val != 0)
     {
         if(compare_hash_value(tempnode -> hash_val, tempnode -> data, h_value, data))
@@ -120,7 +136,7 @@ int insert_into_hash(HASH ** table, long long h_value, char * data)
             return 0;
         }
         index = (index + 1) % h_size;
-        //tempnode = temp -> value[index];
+        tempnode = temp -> value[index];
     }
 
     tempnode -> hash_val = h_value;
@@ -133,7 +149,7 @@ void printhash(HASH * temp)
     for(int i = 0; i < temp -> size; i++)
     {
         HNODE * node = temp -> value[i];
-        printf("\n%lld - %s\n", node ->hash_val, node ->data);
+        //printf("\n%lld - %s\n", node ->hash_val, node ->data);
     }
 }
 void remove_duplicates(char * filename, char * outputfile)
@@ -147,23 +163,23 @@ void remove_duplicates(char * filename, char * outputfile)
     }
 
     size_t length = 0;
-    ssize_t read;
-    char * line = NULL;
+    char * line = malloc(100);
     long long hash_value = 0;
     int size = 100;
     HASH * htable = createHashtable(size);
     
-    while((read = getline(&line, &length, fp)) != -1)
+    //while(getline(&line, &length, fp) != -1)
+    while(fscanf(fp, "%[^\n] ", line) != EOF)
     {
         
-        long long hash_value = compute_hash(line, (int)length);
-        printf("\n%lld\n",hash_value);
+        printf("\n%s\n",line);
+        long long hash_value = compute_hash(line);
         int x = insert_into_hash(&htable, hash_value, line);
     }
 
     printhash(htable);
 
-    //write_to_file(htable, outputfile);
+    write_to_file(htable, outputfile);
 }
 
 int main(int argc, char *argv[])
