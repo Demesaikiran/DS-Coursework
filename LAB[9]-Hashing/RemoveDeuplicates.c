@@ -1,6 +1,10 @@
 #include<stdio.h>
 #include<stdlib.h>
 
+/**
+ * @brief Hashnode in the hashtable.
+ * 
+ */
 typedef struct hashnode HNODE;
 struct hashnode
 {
@@ -8,7 +12,10 @@ struct hashnode
     char * data;
 };
 
-
+/**
+ * @brief Hashtable with the array of hashnodes.
+ * 
+ */
 typedef struct hashtable HASH;
 struct hashtable
 {
@@ -17,6 +24,16 @@ struct hashtable
     
 };
 
+/**
+ * @brief Create a Hash Node object
+ * 
+ * @param hvalue 
+ *          Hash value
+ * @param data 
+ *          Data is the text which we store in the file
+ * @return HNODE* 
+ *          Returning the Hash node object reference.
+ */
 HNODE * create_Hash_Node(long long hvalue, char * data)
 {
     HNODE * newnode = malloc(sizeof(HNODE));
@@ -26,6 +43,14 @@ HNODE * create_Hash_Node(long long hvalue, char * data)
     return newnode;
 }
 
+/**
+ * @brief Create a Hashtable object
+ * 
+ * @param size 
+ *          Hash table size
+ * @return HASH* 
+ *          Returns the hashtable object reference.
+ */
 HASH * createHashtable(int size)
 {
     HASH * newhash = malloc(sizeof(HASH));
@@ -33,28 +58,26 @@ HASH * createHashtable(int size)
     newhash -> value = malloc(size * sizeof(HNODE *));
 
     for(int i = 0; i < size; ++i)
+    {
         newhash -> value[i] = create_Hash_Node(0, NULL);
-
+    }
     return newhash;
 }
 
-void write_to_file(HASH * table, char * filename)
+/**
+ * @brief Removing the hashtable entries from the heap memory
+ * 
+ * @param garbage 
+ *          Hahstable reference
+ */
+void freeHash(HASH * garbage)
 {
-    FILE * fp = fopen(filename, "w");
-
-    int h_size = table -> size;
-    HNODE * tempnode;
-
-    for(int i = 0; i < h_size; ++i)
+    for(int i = 0; i < garbage -> size; i++)
     {
-        tempnode = table -> value[i];
-        if(tempnode -> hash_val != 0){
-            //printf("%d\n", &(tempnode -> data));
-            fprintf(fp, "%s\n", tempnode -> data);
-        }
+        HNODE * node = garbage -> value[i];
+        free(node);
+        //printf("\n%lld - %s\n", node ->hash_val, node ->data);
     }
-    fclose(fp);
-    return;
 }
 
 /**
@@ -83,7 +106,6 @@ long long compute_hash(char * data)
         hash_value = (hash_value  + (ch - 'a' + 1) * p_pow) % m;
         p_pow = (p_pow * p) % m;
     }
-    //printf("%lld\n", hash_value);
     return hash_value;
 }
 
@@ -116,15 +138,12 @@ int insert_into_hash(HASH ** table, long long h_value, char * data)
     HASH * temp = *table;
     int h_size = temp -> size;
     int modvalue = h_value % h_size;
-    //printf("\nModevalue - %d", modvalue);
     HNODE * tempnode = temp -> value[modvalue];
-    //printf("\nModevalue - %d", modvalue);
 
     if(tempnode -> hash_val == 0)
     {
         tempnode -> hash_val = h_value;
         tempnode -> data     = data;
-        //printf("%s\n", data);
         return 1;
     }
     int index = modvalue;
@@ -141,22 +160,22 @@ int insert_into_hash(HASH ** table, long long h_value, char * data)
 
     tempnode -> hash_val = h_value;
     tempnode -> data     = data;
-    //printf("%d\n", &(tempnode -> data));
     return 1;
 }
 
-void printhash(HASH * temp)
-{
-    for(int i = 0; i < temp -> size; i++)
-    {
-        HNODE * node = temp -> value[i];
-        //printf("\n%lld - %s\n", node ->hash_val, node ->data);
-    }
-}
+/**
+ * @brief It removes the duplicates in the file and writes if it is unique or removes if it is duplicate
+ * 
+ * @param filename 
+ *          It is the file where duplicates are present
+ * @param outputfile 
+ *          Writing output file where only unique text is present
+ */
 void remove_duplicates(char * filename, char * outputfile)
 {
-    FILE * fp;
+    FILE * fp, *fout;
     fp = fopen(filename, "r");
+    fout = fopen(outputfile, "w+");
     if(!fp)
     {
         printf("ERROR IN OPENING FILE %s", filename);
@@ -169,18 +188,17 @@ void remove_duplicates(char * filename, char * outputfile)
     int size = 100;
     HASH * htable = createHashtable(size);
     
-    //while(getline(&line, &length, fp) != -1)
-    while(fscanf(fp, "%[^\n] ", line) != EOF)
+    while(getline(&line, &length, fp) != -1)
+    //while(fscanf(fp, "%[^\n] ", line) != EOF)
     {
-        
-        printf("\n%s\n",line);
+		
         long long hash_value = compute_hash(line);
         int x = insert_into_hash(&htable, hash_value, line);
+        if(x == 0) continue;
+        fprintf(fout, "%s", line);
     }
+    freeHash(htable);
 
-    printhash(htable);
-
-    write_to_file(htable, outputfile);
 }
 
 int main(int argc, char *argv[])
