@@ -1,10 +1,5 @@
 // Online Java Compiler
-// Use this editor to write, compile and run your Java code online
-import java.io.*;
 import java.util.*;
-import java.math.*;
-import java.text.*;
-import java.util.regex.*;
 
 abstract class Employee
 {
@@ -20,21 +15,25 @@ abstract class Employee
 
 class HelloWorld {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        String sub = sc.nextLine();
-        int n = Integer.parseInt(sub);
-        for(int i=0; i<n; i++)
-        {
-            String[] input = sc.nextLine().split(" ");
-            if(input[0].equals("ENGINEER"))
+        try (Scanner sc = new Scanner(System.in)) {
+            String sub = sc.nextLine();
+            int n = Integer.parseInt(sub);
+            for(int i=0; i<n; i++)
             {
-                Engineer e = new Engineer();
-                e.setSalary(Integer.parseInt(input[2]));
-                e.setGrade(input[1]);
-                e.label();
-                System.out.println("GRADE : "+ e.getGrade());
-                System.out.println("SALARY : " + e.getSalary());
+                String[] input = sc.nextLine().split(" ");
+                if(input[0].equals("ENGINEER"))
+                {
+                    Engineer e = new Engineer();
+                    e.setSalary(Integer.parseInt(input[2]));
+                    e.setGrade(input[1]);
+                    e.label();
+                    System.out.println("GRADE : "+ e.getGrade());
+                    System.out.println("SALARY : " + e.getSalary());
+                }
             }
+        } catch (NumberFormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 }
@@ -61,6 +60,11 @@ class Engineer extends Employee
     {
         return this.grade;
     }
+    @Override
+    public String getGrade() {
+        // TODO Auto-generated method stub
+        return null;
+    }
     
     
 }
@@ -86,6 +90,11 @@ class Manager extends Employee
     public String getGrade(String grade)
     {
         return this.grade;
+    }
+    @Override
+    public String getGrade() {
+        // TODO Auto-generated method stub
+        return null;
     }
     
 }
