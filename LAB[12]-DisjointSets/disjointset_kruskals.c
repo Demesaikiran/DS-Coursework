@@ -202,7 +202,7 @@ TREE * kruskals(GRAPH * graph)
         if(find(subsets, u) != find(subsets, v))
         {
             edgeCount++;
-            printf("%d %d %d\n", graph -> edges[i].u, graph -> edges[i].v, graph -> edges[i].weight);
+            // printf("%d %d %d\n", graph -> edges[i].u, graph -> edges[i].v, graph -> edges[i].weight);
             Union(&subsets, u, v);
             result[iterator].u = u;
             result[iterator].v = v;
