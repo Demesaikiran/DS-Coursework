@@ -189,7 +189,7 @@ QNODE * getFront(QUEUE * qu)
 */
 void enqueue(QUEUE * qu, QNODE * ele)
 {
-    if(isQEmpty)
+    if(isQEmpty(qu))
     {
         qu -> front    =  0;
         qu -> rear     =  0;
@@ -220,10 +220,9 @@ QNODE * dequeue(QUEUE * qu)
         return ele;
     }
 
-    qu -> front = (qu -> front + 1) % (qu -> size);
+    qu -> front = (qu -> front + 1);
     return ele;
 }
-
 // .......................... QUEUE UTILITY ENDS  ...............................
 
 
@@ -257,7 +256,7 @@ int BFS(FStar * graph, int source, int destination)
     int infoindex = source;
 
 
-    while(!isQEmpty(qu) && infoindex != V )
+    while(!isQEmpty(qu))
     {
         QNODE * current = getFront(qu);
 
@@ -269,9 +268,9 @@ int BFS(FStar * graph, int source, int destination)
         
         QNODE * deletenode = dequeue(qu);
 
+
         for (int i = graph -> info_pointer[infoindex]; i < graph -> info_pointer[infoindex+1]; i++)
         {
-            
             QNODE * adjacent = createQueueNode(graph -> neighbour[i], current -> distance + 1);
             if(!visited[adjacent -> vertex])
             {
@@ -292,13 +291,16 @@ int BFS(FStar * graph, int source, int destination)
  * @brief Takes input from the user and creates graph in the form of 
  *          forward star and source, destination using stdin.
  * 
+ * Also checks the input based on limits and negative inputs...
+ * 
  * @param graph <Forward star reference>
  * @param source 
  * @param destination 
  */
-void input_assert(FStar ** graph, int * source, int * destination)
+int input_assert(FStar ** graph, int * source, int * destination)
 {
     scanf("%d%d", &((*graph) -> V), &((*graph) -> E));
+    if((*graph) -> E <= 0 || (*graph) -> V <= 0) return 0;
 
     int nEdges = (*graph) -> E;
     int nVertices = (*graph) -> V;
@@ -312,6 +314,7 @@ void input_assert(FStar ** graph, int * source, int * destination)
     {
         int a, b;
         scanf("%d%d", &a, &b);
+        if(a < 0 || b < 0) return 0;
 
         if(infopointer == a)
         {
@@ -333,7 +336,8 @@ void input_assert(FStar ** graph, int * source, int * destination)
     (*graph) -> info_pointer[++infopointer]= index;
 
     scanf("%d%d", source, destination);
-    return;
+    if (*source < 0 || *source > nVertices || *destination < 0 || *destination > nVertices) return 0;
+    return 1;
 }
 
 
@@ -342,11 +346,17 @@ int main(int argc, char const *argv[])
 
     int source, destination;
     FStar * graph = malloc(sizeof(FStar));
-    input_assert(&graph, & source, & destination);
+    int checkInput = input_assert(&graph, & source, & destination);
+    if(!checkInput)
+    {
+        printf("INVALID INPUT");
+        return 0;
+    }
     // printFstar(graph);
 
     int shortDistance = BFS(graph, source, destination);
-    printf("%d", shortDistance);
+
+    shortDistance == -1 ? printf("INVALID INPUT") : printf("%d", shortDistance);
 
     free(graph -> info_pointer);
     free(graph -> neighbour);
